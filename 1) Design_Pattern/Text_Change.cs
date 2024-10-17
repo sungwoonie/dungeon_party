@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public static class Text_Change
@@ -15,6 +14,11 @@ public static class Text_Change
     {
         string zero = "0";
 
+        if (number < 1.0f)
+        {
+            return string.Format("{0}{1}{2}", "", number.ToString("F2"), "");
+        }
+
         if (-1d < number && number < 1d)
         {
             return zero;
@@ -29,7 +33,7 @@ public static class Text_Change
         string significant = (number < 0) ? "-" : string.Empty;
 
         //  보여줄 숫자
-        string showNumber = string.Empty;
+        string formattedNumber = string.Empty;
 
         //  단위 문자열
         string unityString = string.Empty;
@@ -46,7 +50,7 @@ public static class Text_Change
         //  지수 (자릿수 표현)
         if (!int.TryParse(partsSplit[1], out int exponent))
         {
-            Debug.LogWarningFormat("Failed - ToCurrentString({0}) : partSplit[1] = {1}", number, partsSplit[1]);
+            Debug.LogWarningFormat("Failed to parse exponent: {0}", partsSplit[1]);
             return zero;
         }
 
@@ -56,22 +60,64 @@ public static class Text_Change
         //  나머지는 정수부 자릿수 계산에 사용(10의 거듭제곱을 사용)
         int remainder = exponent % 3;
 
-        //  1A 미만은 그냥 표현
-        if (exponent < 3)
-        {
-            showNumber = System.Math.Truncate(number).ToString();
-        }
-        else
-        {
-            //  10의 거듭제곱을 구해서 자릿수 표현값을 만들어 준다.
-            var temp = double.Parse(partsSplit[0].Replace("E", "")) * System.Math.Pow(10, remainder);
+        //  10의 거듭제곱을 구해서 자릿수 표현값을 만들어 준다.
+        var temp = double.Parse(partsSplit[0].Replace("E", "")) * System.Math.Pow(10, remainder);
 
-            //  소수 둘째자리까지만 출력한다.
-            showNumber = temp.ToString("F").Replace(".00", "");
-        }
+        //  소수 둘째자리까지만 출력한다.
+        formattedNumber = temp.ToString("F2");
 
         unityString = CurrencyUnits[quotient];
 
-        return string.Format("{0}{1}{2}", significant, showNumber, unityString);
+        return string.Format("{0}{1}{2}", significant, formattedNumber, unityString);
+    }
+
+    /// <summary>
+    /// 클리커 게임의 화폐 단위 문자열을 double 형 숫자로 변환
+    /// </summary>
+    /// <param name="currencyString"></param>
+    /// <returns></returns>
+    public static double FromCurrencyString(this string currencyString)
+    {
+        if (string.IsNullOrEmpty(currencyString))
+        {
+            return 0.0;
+        }
+
+        string numberPart = string.Empty;
+        string unitPart = string.Empty;
+
+        // 숫자 부분과 단위 부분을 분리
+        for (int i = 0; i < currencyString.Length; i++)
+        {
+            if (char.IsDigit(currencyString[i]) || currencyString[i] == '.' || currencyString[i] == '-')
+            {
+                numberPart += currencyString[i];
+            }
+            else
+            {
+                unitPart = currencyString.Substring(i);
+                break;
+            }
+        }
+
+        // 숫자 파싱
+        if (!double.TryParse(numberPart, out double number))
+        {
+            Debug.LogWarningFormat("Failed to parse number part: {0}", numberPart);
+            return 0.0;
+        }
+
+        // 단위 파싱
+        int unitIndex = Array.IndexOf(CurrencyUnits, unitPart);
+        if (unitIndex == -1)
+        {
+            Debug.LogWarningFormat("Failed to find unit part: {0}", unitPart);
+            return 0.0;
+        }
+
+        // 실제 숫자 계산
+        double result = number * Math.Pow(10, unitIndex * 3);
+
+        return result;
     }
 }

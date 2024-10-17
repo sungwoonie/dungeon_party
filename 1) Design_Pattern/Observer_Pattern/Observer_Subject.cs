@@ -20,7 +20,7 @@ public class Observer_Subject : MonoBehaviour {
 	{
 		foreach (Observer observer in observers) 
 		{
-			observer.Notify (this);
+			observer.Notify();
 		}
 	}
 

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SingleTon<T> : MonoBehaviour
 {
+	public bool dont_destroy = true;
+
 	private static T _instance;
 
 	public static T instance
@@ -13,6 +15,15 @@ public class SingleTon<T> : MonoBehaviour
 			return _instance;
 		}
 	}
+
+	protected virtual void OnEnable()
+	{
+		if (dont_destroy)
+		{
+			DontDestroyOnLoad(this);
+		}
+	}
+
 	protected virtual void Awake()
 	{
 		_instance = this.GetComponent<T>();

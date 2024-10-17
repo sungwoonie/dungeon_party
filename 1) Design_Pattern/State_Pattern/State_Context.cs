@@ -25,5 +25,6 @@ public class State_Context {
 	{
 		Current_State = state;
 		Current_State.Handle (controller);
+		Debug_Manager.Debug_In_Game_Message($"{controller.name} state changed to {Current_State}");
 	}
 }

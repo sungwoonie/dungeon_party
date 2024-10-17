@@ -19,6 +19,20 @@ public class Object_Pooling : MonoBehaviour
         }
     }
 
+    public void Set_All_Pool_To_Off()
+    {
+        for (int i = 0; i < pools.Count; i++)
+        {
+            for (int j = 0; j < pools[prefabs[i].name].Count; j++)
+            {
+                if (pools[prefabs[i].name][j].gameObject.activeSelf)
+                {
+                    pools[prefabs[i].name][j].gameObject.SetActive(false);
+                }
+            }
+        }
+    }
+
     public List<GameObject> Get_Activating_Pool()
     {
         List<GameObject> pool = new List<GameObject>();
@@ -182,18 +196,18 @@ public class Object_Pooling : MonoBehaviour
     {
         Transform pool = null;
 
-        for (int i = 0; i < pools[0].Count; i++)
+        for (int i = 0; i < pools[prefabs[0].name].Count; i++)
         {
-            if (pools[0][i].gameObject.activeSelf)
+            if (!pools[prefabs[0].name][i].gameObject.activeSelf)
             {
-                pool = pools[0][i];
+                pool = pools[prefabs[0].name][i];
                 return pool;
             }
         }
 
         Create_New_Pools();
 
-        pool = pools[0][pools[0].Count - pool_count];
+        pool = pools[prefabs[0].name][pools[prefabs[0].name].Count - pool_count];
 
         return pool;
     }
